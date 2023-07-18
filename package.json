@@ -1,0 +1,22 @@
+{
+  "name": "react-query-duplicate",
+  "version": "1.0.0",
+  "description": "React Query Duplicate",
+  "license": "MIT",
+  "author": {
+    "name": "Sonjoy Datta",
+    "email": "sonjoy.dat@gmail.com",
+    "url": "https://sonjoydatta.me"
+  },
+  "scripts": {
+    "format": "prettier -c -w src/**/*"
+  },
+  "dependencies": {
+    "lodash.debounce": "^4.0.8",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/lodash.debounce": "^4.0.7",
+    "prettier": "^3.0.0"
+  }
+}
