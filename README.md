@@ -1,3 +1,3 @@
 # react-query-duplicate
 
-Fucking TanStack Query decided to remove `onSuccess`, `onError` and `onSettled`. So, this is the simplest version of `useQuery` hook
+TanStack Query decided to remove `onSuccess`, `onError` and `onSettled`. So, here I added a minimal version of the `useQuery` hook
