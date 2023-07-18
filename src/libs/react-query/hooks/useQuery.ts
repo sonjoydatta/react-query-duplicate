@@ -1,27 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { debounce, DebouncedFunc } from 'lodash';
-import { useCallback, useEffect, useRef, useState } from 'react';
-
-interface QueryArgs<T, S, K> {
-	fn: () => Promise<T>;
-	deps?: K extends number ? never : S;
-	delay?: S extends any[] ? never : K;
-	immediate?: boolean;
-	onSuccess?: (data: T) => void;
-	onError?: (error: any) => void;
-	onFinal?: () => void;
-}
-
-type QueryResult<T, S> = {
-	loading: boolean;
-	error: any | null;
-	data: T | null;
-	refetch: () => Promise<void>;
-} & (S extends undefined
-	? {
-			refetchLazy: DebouncedFunc<() => Promise<void>>;
-	  }
-	: {});
+import { debounce, uniqueId } from 'lodash';
+import { useCallback, useEffect, useRef } from 'react';
+import { useQueryClient } from '../providers';
+import { QueryArgs, QueryResult } from './types';
 
 export const useQuery = <
 	T extends any = any,
@@ -29,29 +10,29 @@ export const useQuery = <
 	K extends number | undefined = undefined,
 >(
 	args: QueryArgs<T, S, K>
-) => {
+): QueryResult<T, S> => {
 	const { fn, deps = [], delay = 300, immediate = true, onSuccess, onError, onFinal } = args;
-	const [loading, setLoading] = useState(immediate || false);
-	const [error, setError] = useState<any | null>(null);
-	const [data, setData] = useState<T | null>(null);
+	const { getQueryState, setQueryLoading, setQueryError, setQueryData } = useQueryClient();
 	const executeRef = useRef<() => Promise<void>>();
+	const uniqueIdRef = useRef<string>(uniqueId('query_'));
+	const id = uniqueIdRef.current;
 
 	const execute = useCallback(async () => {
-		setLoading(true);
-		setError(null);
+		setQueryLoading(id, true);
+		setQueryError(id, null);
 
 		try {
 			const res = await fn();
-			setData(res);
+			setQueryData(id, res);
 			onSuccess?.(res);
 		} catch (error) {
-			setError(error);
+			setQueryError(id, error);
 			onError?.(error);
 		} finally {
-			setLoading(false);
+			setQueryLoading(id, false);
 			onFinal?.();
 		}
-	}, [fn, onError, onFinal, onSuccess]);
+	}, [fn, id, onFinal, onError, onSuccess, setQueryData, setQueryError, setQueryLoading]);
 
 	useEffect(() => {
 		executeRef.current = execute;
@@ -81,9 +62,7 @@ export const useQuery = <
 	}, [immediate, ...deps]);
 
 	const results = {
-		loading,
-		error,
-		data,
+		...getQueryState(id),
 		refetch: execute,
 	};
 
