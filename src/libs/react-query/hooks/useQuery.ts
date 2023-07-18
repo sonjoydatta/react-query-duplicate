@@ -1,28 +1,38 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import debounce from 'lodash.debounce';
+import { debounce, DebouncedFunc } from 'lodash';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-export interface UseQueryArgs<T> {
+interface QueryArgs<T, S, K> {
 	fn: () => Promise<T>;
-	deps?: any[];
+	deps?: K extends number ? never : S;
+	delay?: S extends any[] ? never : K;
 	immediate?: boolean;
-	lazyDelay?: number;
 	onSuccess?: (data: T) => void;
 	onError?: (error: any) => void;
 	onFinal?: () => void;
 }
 
-export const useQuery = <T = any>({
-	fn,
-	deps = [],
-	immediate = true,
-	lazyDelay = 300,
-	onSuccess,
-	onError,
-	onFinal,
-}: UseQueryArgs<T>) => {
+type QueryResult<T, S> = {
+	loading: boolean;
+	error: any | null;
+	data: T | null;
+	refetch: () => Promise<void>;
+} & (S extends undefined
+	? {
+			refetchLazy: DebouncedFunc<() => Promise<void>>;
+	  }
+	: {});
+
+export const useQuery = <
+	T extends any = any,
+	S extends any[] | undefined = undefined,
+	K extends number | undefined = undefined,
+>(
+	args: QueryArgs<T, S, K>
+) => {
+	const { fn, deps = [], delay = 300, immediate = true, onSuccess, onError, onFinal } = args;
 	const [loading, setLoading] = useState(immediate || false);
-	const [error, setError] = useState<any>(null);
+	const [error, setError] = useState<any | null>(null);
 	const [data, setData] = useState<T | null>(null);
 	const executeRef = useRef<() => Promise<void>>();
 
@@ -56,8 +66,8 @@ export const useQuery = <T = any>({
 		debounce(async () => {
 			if (!executeRef.current) return;
 			await executeRef.current();
-		}, lazyDelay),
-		[lazyDelay]
+		}, delay),
+		[delay]
 	);
 
 	// Call when immediate is true or dependencies change
@@ -70,11 +80,16 @@ export const useQuery = <T = any>({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [immediate, ...deps]);
 
-	return {
+	const results = {
 		loading,
 		error,
 		data,
 		refetch: execute,
-		refetchLazy: executeWithDebounce,
 	};
+
+	if (!deps?.length) {
+		(results as any).refetchLazy = executeWithDebounce;
+	}
+
+	return results as QueryResult<T, S>;
 };

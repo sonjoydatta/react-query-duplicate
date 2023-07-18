@@ -1,0 +1,74 @@
+body {
+	margin: 0;
+}
+
+input {
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	padding: 12px 20px;
+	margin: 8px 0;
+	box-sizing: border-box;
+	min-width: 320px;
+	outline: none;
+}
+
+input[type='checkbox'] {
+	min-width: auto;
+}
+
+button {
+	border-radius: 4px;
+	padding: 12px 20px;
+	margin: 8px 0;
+	box-sizing: border-box;
+	outline: none;
+	cursor: pointer;
+	box-shadow: none;
+	border: none;
+	color: white;
+	background-color: #114ec9;
+}
+
+.app {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+}
+
+.app-header {
+	background-color: #282c34;
+	min-height: 100px;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	color: white;
+	gap: 10px;
+}
+
+.app-header .checkbox {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+}
+
+.app-body {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.product-list {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	grid-gap: 10px;
+	padding: 20px;
+}
+
+.product img {
+	width: auto;
+	height: 160px;
+}
